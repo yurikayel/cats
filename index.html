@@ -1,54 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cats</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@1.10.7/dist/full.css" rel="stylesheet">
-  <script src="https://unpkg.com/htmx.org@1.6.1"></script>
+  <title>Cat GIF Explorer</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.5/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.css" rel="stylesheet">
 </head>
 
-<body class="bg-black text-white flex justify-center items-center min-h-screen">
-  <div class="container mx-auto p-4 max-w-screen-md">
-    <h1 class="text-2xl font-bold mb-4">Cat GIFs</h1>
-    <div class="mb-4 flex justify-center rounded-lg overflow-hidden shadow-md">
-      <img id="cat-gif" src="https://www.dropbox.com/s/dz5zpo98am4jton/ezgif.com-gif-maker.gif?dl=0&amp;raw=1" alt="cat-gif" class="rounded-lg">
-    </div>
-    <p class="mt-4 text-center">Fetch cat gifs from <a href="https://cataas.com/">https://cataas.com/</a>. Be creative, but layout best practices are expected. Second phase will require live coding expanding functionalities.</p>
-    <h4 class="mt-6 text-xl font-semibold">Requirements</h4>
-    <ul class="list-disc list-inside mt-2">
-      <li>README with instructions on how to build your project.</li>
-      <li>Organization: have some package organization.</li>
-      <li>Scalability: should welcome change/expansion without stress, specially consuming additional endpoints.</li>
-      <li>Implement Dependency Injection or a Service Locator.</li>
-      <li>Version Control: short descriptive commits that reflect your work from start to finish.</li>
-    </ul>
-    <div class="mb-4 flex justify-center rounded-lg overflow-hidden shadow-md p-4" 
-        hx-get="https://cataas.com/cat/gif" 
-        hx-trigger="click" 
-        hx-swap="outerHTML:#cat-gif">
-        <img id="cat-gif" src="https://cataas.com/cat/gif" alt="cat-gif" class="rounded-lg">
-    </div>
-    <h4 class="mt-6 text-xl font-semibold">Would be nice</h4>
-    <ul class="list-disc list-inside mt-2">
-      <li>Unit Tests and UI Tests.</li>
-      <li>Apply an Architecture Pattern of your choice.</li>
-    </ul>
-    <h4 class="mt-6 text-xl font-semibold">Constraints</h4>
-    <p class="mt-2 text-justify">Use any tools or import any libraries you see fit, but remember old Uncle Ben.
-      <div class="mb-4 flex justify-center rounded-lg overflow-hidden shadow-md p-4">
-        <img src="https://www.dropbox.com/s/ievhx5cibaxh6aa/spiderman-uncle-ben.gif?dl=0&amp;raw=1" alt="spiderman-uncle-ben.gif" class="rounded-lg">
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <noscript>
+    <div class="max-w-3xl mx-auto px-4 py-6">
+      <div class="alert alert-error">
+        <span>This experience needs JavaScript enabled to fetch fresh cat GIFs from cataas.com.</span>
       </div>
-      <br><br>There is no time constraint for this first test, but we will take into account the time you took working on it.
-      <br><br>If you feel your code would improve meaningfully if you take another day, please do.
-      <br><br>Focus on quality and documenting your work, so we can better assess your skills ;-)</p>
-    <p class="mt-2">Push to a public repo of your choice and send our recruiter the link.</p>
-    <div class="mb-4 flex justify-center rounded-lg overflow-hidden shadow-md p-4">
-      <img src="https://www.dropbox.com/s/17iyyxp1vptbd7o/gimme-code-gimme.gif?dl=0&amp;raw=1" alt="gimme-code-gimme.gif" class="rounded-lg">
     </div>
+  </noscript>
+  <div class="max-w-3xl mx-auto px-4 py-12">
+    <header class="space-y-4 text-center sm:text-left">
+      <p class="inline-flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-secondary">
+        <span class="w-2 h-2 rounded-full bg-secondary"></span>
+        Daily dose of feline joy
+      </p>
+      <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl">Cat GIF Explorer</h1>
+      <p class="max-w-2xl text-lg text-slate-300">
+        Mix-and-match moods and captions to summon curated GIFs from
+        <a class="link link-secondary" href="https://cataas.com/" target="_blank" rel="noreferrer">cataas.com</a>.
+        Built with scalability and clean abstractions so the next feature drop stays fun.
+      </p>
+    </header>
+
+    <main id="app" class="mt-10 space-y-10">
+      <section aria-live="polite">
+        <div class="relative rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-4 shadow-2xl">
+          <div data-role="spinner" class="absolute inset-4 flex items-center justify-center rounded-2xl bg-slate-900/70 backdrop-blur-md">
+            <span class="loading loading-spinner loading-lg text-secondary"></span>
+          </div>
+          <img data-role="cat-media" src="" alt="A playful cat GIF" class="h-full w-full max-h-[460px] rounded-2xl object-cover opacity-0 transition-opacity duration-300 ease-out">
+        </div>
+        <p data-role="status" class="mt-3 text-sm text-slate-400" role="status"></p>
+      </section>
+
+      <section class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl">
+        <form data-role="controls" class="space-y-5">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="form-control w-full">
+              <span class="label-text text-slate-200">Pick a vibe</span>
+              <select data-role="tag-select" class="select select-bordered select-secondary" aria-label="Pick a cat tag">
+                <option value="">Any mood</option>
+              </select>
+            </label>
+            <label class="form-control w-full">
+              <span class="label-text text-slate-200">Add a caption</span>
+              <input data-role="caption-input" type="text" maxlength="30" placeholder="Sup, hooman?" class="input input-bordered input-secondary" autocomplete="off" aria-label="Add caption text">
+            </label>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button data-role="refresh-button" type="submit" class="btn btn-secondary">
+              Show me a cat
+            </button>
+            <button data-role="surprise-button" type="button" class="btn btn-outline btn-secondary">
+              Surprise me
+            </button>
+            <button data-role="reset-button" type="button" class="btn btn-ghost text-slate-400 hover:text-slate-200">
+              Reset
+            </button>
+          </div>
+        </form>
+        <p data-role="form-helper" class="text-sm text-slate-400">
+          Tip: combine a tag and a caption to craft unique, shareable loops. Captions are limited to 30 characters to keep requests snappy.
+        </p>
+      </section>
+
+      <section class="rounded-2xl border border-slate-900 bg-slate-900/40 p-6 text-sm text-slate-300 shadow-lg">
+        <h2 class="text-xl font-semibold text-slate-100">Under the hood</h2>
+        <ul class="mt-3 space-y-2">
+          <li>Modular architecture with dependency injection keeps fetch logic and UI responsibilities separated.</li>
+          <li>Service layer is primed for more endpoints (search, favorites, random facts) without touching UI code.</li>
+          <li>Resilient UX with optimistic loading states, error feedback, and keyboard-friendly controls.</li>
+        </ul>
+      </section>
+    </main>
   </div>
+
+  <script type="module" src="./src/main.js"></script>
 </body>
 
 </html>
