@@ -36,7 +36,7 @@ export class AppController {
     } catch (error) {
       console.warn("Failed to load cat tags", error);
       this.view.showStatus(
-        "Tag suggestions are snoozing right now. You can still fetch random cats!"
+        "😴 Tag suggestions are snoozing right now. You can still fetch random cats! 🐱"
       );
     } finally {
       this.view.setTagLoading(false);
@@ -53,7 +53,7 @@ export class AppController {
     } catch (error) {
       console.error("Unable to load cat GIF", error);
       this.view.showError(
-        "We could not load a cat right now. Please try again in a few seconds."
+        "😿 We could not load a cat right now. Please try again in a few seconds. 🔄"
       );
     } finally {
       this.view.setFormDisabled(false);
@@ -97,7 +97,7 @@ export class AppController {
 
   buildAltText({ tag, caption }) {
     const details = [tag, caption].filter(Boolean).join(" · ");
-    return details ? `Animated cat (${details})` : "Animated cat";
+    return details ? `🐱 Animated cat (${details})` : "🐱 Animated cat";
   }
 
   buildStatusMessage({ tag, caption }) {
@@ -110,9 +110,9 @@ export class AppController {
     }
 
     if (!pieces.length) {
-      return "Serving a fresh random cat GIF.";
+      return "🎉 Serving a fresh random cat GIF! 😸";
     }
 
-    return `Serving a cat GIF with ${pieces.join(" and ")}.`;
+    return `🎉 Serving a cat GIF with ${pieces.join(" and ")}! 😺`;
   }
 }

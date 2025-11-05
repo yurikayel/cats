@@ -127,9 +127,9 @@ export class AppView {
   setTagLoading(isLoading) {
     this.tagSelect.disabled = isLoading;
     if (isLoading) {
-      this.setHelper("Loading moods… hold tight");
+      this.setHelper("🐱 Loading moods… hold tight! ✨");
     } else {
-      this.setHelper("Tip: combine a tag and a caption to craft unique, shareable loops. Captions are limited to 30 characters to keep requests snappy.");
+      this.setHelper("💡 Pro Tip: Combine a tag and a caption to craft unique, shareable cat moments! Captions are limited to 30 characters. 🎨");
     }
   }
 
