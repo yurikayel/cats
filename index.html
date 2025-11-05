@@ -4,54 +4,192 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore curated cat GIFs with customizable tags and captions. Mix-and-match moods to create shareable feline moments.">
   <title>🐱 Pawsome Cat GIF Explorer 😸</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.5/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.css" rel="stylesheet">
   <style>
+    /* CSS Custom Properties for theming */
+    :root {
+      --color-primary: #a78bfa;
+      --color-secondary: #ec4899;
+      --color-bg-dark: rgba(15, 23, 42, 0.7);
+      --color-border: rgba(167, 139, 250, 0.3);
+      --color-shadow: rgba(139, 92, 246, 0.3);
+      --transition-base: 0.3s ease;
+      --transition-fast: 0.15s ease;
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* Animations */
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-10px); }
     }
+    
     @keyframes paw-bounce {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.2); }
     }
-    .float-animation {
-      animation: float 3s ease-in-out infinite;
-    }
-    .paw-bounce {
-      animation: paw-bounce 1s ease-in-out infinite;
-    }
-    body {
-      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #581c87 75%, #3b0764 100%);
-      background-size: 400% 400%;
-      animation: gradient-shift 15s ease infinite;
-    }
+
     @keyframes gradient-shift {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
+
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    .paw-bounce {
+      animation: paw-bounce 1s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #581c87 75%, #3b0764 100%);
+      background-size: 400% 400%;
+      animation: gradient-shift 15s ease infinite;
+      background-attachment: fixed;
+    }
+
+    /* Skip link for accessibility */
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      background: var(--color-primary);
+      color: white;
+      padding: 1rem 2rem;
+      z-index: 100;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 0 0 8px 0;
+      transition: top var(--transition-fast);
+    }
+
+    .skip-link:focus {
+      top: 0;
+    }
+
     .cat-card {
       backdrop-filter: blur(20px);
-      background: rgba(15, 23, 42, 0.7);
-      border: 2px solid rgba(167, 139, 250, 0.3);
-      box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3), 0 0 80px rgba(167, 139, 250, 0.1);
+      background: var(--color-bg-dark);
+      border: 2px solid var(--color-border);
+      box-shadow: 0 20px 60px var(--color-shadow), 0 0 80px rgba(167, 139, 250, 0.1);
+      transition: transform var(--transition-base), box-shadow var(--transition-base);
     }
+
+    .cat-card:focus-within {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 4px;
+    }
+
     .paw-print {
       display: inline-block;
       font-size: 1.5rem;
       opacity: 0.7;
-      transition: all 0.3s ease;
+      transition: all var(--transition-base);
+      min-width: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
-    .paw-print:hover {
+
+    .paw-print:hover,
+    .paw-print:focus {
       transform: rotate(15deg) scale(1.3);
       opacity: 1;
+    }
+
+    /* Skeleton loader */
+    .skeleton {
+      background: linear-gradient(
+        90deg,
+        rgba(167, 139, 250, 0.1) 0%,
+        rgba(167, 139, 250, 0.2) 50%,
+        rgba(167, 139, 250, 0.1) 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    /* Better focus styles */
+    *:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* Touch-friendly button sizes */
+    @media (pointer: coarse) {
+      button, .btn {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
+
+    /* Smooth image loading */
+    .cat-image {
+      will-change: opacity;
+      content-visibility: auto;
+    }
+
+    /* Error state */
+    .error-state {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Loading state improvements */
+    .loading-container {
+      min-height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Better button states */
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* ARIA live region styling */
+    [role="status"],
+    [aria-live] {
+      min-height: 1.5rem;
     }
   </style>
 </head>
 
 <body class="min-h-screen text-slate-100 relative overflow-x-hidden">
+  <!-- Skip to main content link for accessibility -->
+  <a href="#app" class="skip-link">Skip to main content</a>
   <!-- Decorative floating cat emojis -->
   <div class="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
     <div class="absolute top-10 left-10 text-6xl opacity-20 float-animation" style="animation-delay: 0s;">🐱</div>
@@ -62,136 +200,186 @@
   </div>
 
   <noscript>
-    <div class="max-w-3xl mx-auto px-4 py-6 relative z-10">
+    <div class="max-w-3xl mx-auto px-4 py-6 relative z-10" role="alert">
       <div class="alert alert-error">
         <span>⚠️ This experience needs JavaScript enabled to fetch fresh cat GIFs from cataas.com! 😿</span>
       </div>
     </div>
   </noscript>
-  <div class="max-w-4xl mx-auto px-4 py-12 relative z-10">
-    <header class="space-y-6 text-center">
-      <div class="inline-flex items-center justify-center gap-3 text-sm font-bold uppercase tracking-widest text-purple-300 bg-purple-950/50 px-6 py-3 rounded-full border border-purple-400/30 backdrop-blur-md">
-        <span class="paw-bounce text-xl">🐾</span>
+
+  <div class="max-w-4xl mx-auto px-4 py-8 sm:py-12 relative z-10">
+    <header class="space-y-4 sm:space-y-6 text-center">
+      <div class="inline-flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-bold uppercase tracking-widest text-purple-300 bg-purple-950/50 px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-purple-400/30 backdrop-blur-md">
+        <span class="paw-bounce text-lg sm:text-xl" aria-hidden="true">🐾</span>
         <span>Daily Dose of Feline Joy</span>
-        <span class="paw-bounce text-xl" style="animation-delay: 0.5s;">🐾</span>
+        <span class="paw-bounce text-lg sm:text-xl" style="animation-delay: 0.5s;" aria-hidden="true">🐾</span>
       </div>
-      <h1 class="text-5xl sm:text-7xl font-black tracking-tight bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent drop-shadow-2xl">
-        😸 Pawsome Cat GIF Explorer 🐱
+      <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent drop-shadow-2xl">
+        <span aria-hidden="true">😸</span> Pawsome Cat GIF Explorer <span aria-hidden="true">🐱</span>
       </h1>
-      <p class="max-w-2xl mx-auto text-xl text-purple-200 leading-relaxed">
-        <span class="inline-block">🎨</span> Mix-and-match moods and captions to summon curated GIFs from
-        <a class="link link-secondary font-bold hover:text-pink-300 transition-colors" href="https://cataas.com/" target="_blank" rel="noreferrer">cataas.com</a>
-        <span class="inline-block">✨</span>
+      <p class="max-w-2xl mx-auto text-lg sm:text-xl text-purple-200 leading-relaxed">
+        <span class="inline-block" aria-hidden="true">🎨</span> Mix-and-match moods and captions to summon curated GIFs from
+        <a class="link link-secondary font-bold hover:text-pink-300 transition-colors focus:outline-2 focus:outline-purple-400 focus:outline-offset-2 rounded" href="https://cataas.com/" target="_blank" rel="noreferrer noopener">cataas.com</a>
+        <span class="inline-block" aria-hidden="true">✨</span>
         <br>
-        <span class="text-purple-300 text-base mt-2 inline-block">🚀 Built with purrfection, scalability, and clean code!</span>
+        <span class="text-purple-300 text-sm sm:text-base mt-2 inline-block"><span aria-hidden="true">🚀</span> Built with purrfection, scalability, and clean code!</span>
       </p>
     </header>
 
-    <main id="app" class="mt-12 space-y-10">
+    <main id="app" class="mt-8 sm:mt-12 space-y-8 sm:space-y-10" aria-busy="false">
       <!-- Cat GIF Display Section -->
-      <section aria-live="polite">
-        <div class="relative rounded-3xl cat-card p-6 transform transition-all duration-300 hover:scale-[1.02]">
-          <div data-role="spinner" class="absolute inset-6 flex items-center justify-center rounded-2xl bg-purple-950/70 backdrop-blur-md">
+      <section aria-live="polite" aria-label="Cat GIF display">
+        <div class="relative rounded-2xl sm:rounded-3xl cat-card p-4 sm:p-6 transform transition-all duration-300 hover:scale-[1.01] focus-within:scale-[1.01]">
+          <div data-role="spinner" class="absolute inset-4 sm:inset-6 flex items-center justify-center rounded-xl sm:rounded-2xl bg-purple-950/70 backdrop-blur-md loading-container">
             <div class="text-center space-y-4">
-              <span class="loading loading-spinner loading-lg text-pink-400"></span>
-              <p class="text-purple-200 font-semibold">🐱 Fetching your purrfect cat... 😸</p>
+              <span class="loading loading-spinner loading-lg text-pink-400" aria-hidden="true"></span>
+              <p class="text-purple-200 font-semibold text-sm sm:text-base">
+                <span aria-hidden="true">🐱</span> Fetching your purrfect cat... <span aria-hidden="true">😸</span>
+              </p>
             </div>
           </div>
-          <img data-role="cat-media" src="" alt="A playful cat GIF" class="h-full w-full max-h-[500px] rounded-2xl object-cover opacity-0 transition-opacity duration-300 ease-out shadow-2xl">
+          <div data-role="error-container" class="hidden absolute inset-4 sm:inset-6 flex items-center justify-center rounded-xl sm:rounded-2xl bg-red-950/70 backdrop-blur-md error-state">
+            <div class="text-center space-y-4 max-w-md px-4">
+              <span class="text-4xl" aria-hidden="true">😿</span>
+              <p class="text-red-200 font-semibold text-sm sm:text-base" data-role="error-message"></p>
+              <button data-role="retry-button" type="button" class="btn btn-sm btn-error mt-2">
+                Try Again
+              </button>
+            </div>
+          </div>
+          <img 
+            data-role="cat-media" 
+            src="" 
+            alt="A playful cat GIF" 
+            class="cat-image h-full w-full max-h-[400px] sm:max-h-[500px] rounded-xl sm:rounded-2xl object-cover opacity-0 transition-opacity duration-300 ease-out shadow-2xl"
+            loading="lazy"
+            decoding="async"
+          >
         </div>
-        <p data-role="status" class="mt-4 text-center text-base text-purple-300 font-medium" role="status"></p>
+        <p data-role="status" class="mt-4 text-center text-sm sm:text-base text-purple-300 font-medium" role="status" aria-live="polite" aria-atomic="true"></p>
       </section>
 
       <!-- Controls Section -->
-      <section class="space-y-6 rounded-3xl cat-card p-8 transform transition-all duration-300 hover:shadow-2xl">
-        <div class="flex items-center gap-3 mb-4">
-          <span class="text-3xl">🎮</span>
-          <h2 class="text-2xl font-bold text-purple-200">Customize Your Cat</h2>
-          <span class="text-3xl">🐈</span>
+      <section class="space-y-6 rounded-2xl sm:rounded-3xl cat-card p-6 sm:p-8 transform transition-all duration-300 hover:shadow-2xl">
+        <div class="flex items-center justify-center gap-2 sm:gap-3 mb-4">
+          <span class="text-2xl sm:text-3xl" aria-hidden="true">🎮</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-purple-200">Customize Your Cat</h2>
+          <span class="text-2xl sm:text-3xl" aria-hidden="true">🐈</span>
         </div>
-        <form data-role="controls" class="space-y-6">
-          <div class="grid gap-6 sm:grid-cols-2">
+        <form data-role="controls" class="space-y-6" novalidate>
+          <div class="grid gap-4 sm:gap-6 sm:grid-cols-2">
             <label class="form-control w-full">
               <div class="label">
-                <span class="label-text text-purple-200 font-semibold flex items-center gap-2">
-                  <span>😺</span> Pick a vibe
+                <span class="label-text text-purple-200 font-semibold flex items-center gap-2 text-sm sm:text-base">
+                  <span aria-hidden="true">😺</span> Pick a vibe
                 </span>
               </div>
-              <select data-role="tag-select" class="select select-bordered select-secondary bg-purple-950/50 text-purple-100 font-medium border-purple-400/40 focus:border-pink-400 focus:outline-none transition-all" aria-label="Pick a cat tag">
+              <select 
+                data-role="tag-select" 
+                class="select select-bordered select-secondary bg-purple-950/50 text-purple-100 font-medium border-purple-400/40 focus:border-pink-400 transition-all text-sm sm:text-base min-h-[44px]" 
+                aria-label="Pick a cat tag"
+                aria-describedby="tag-help"
+              >
                 <option value="">✨ Any mood</option>
               </select>
+              <span id="tag-help" class="sr-only">Select a mood tag to filter cat GIFs</span>
             </label>
             <label class="form-control w-full">
               <div class="label">
-                <span class="label-text text-purple-200 font-semibold flex items-center gap-2">
-                  <span>💬</span> Add a caption
+                <span class="label-text text-purple-200 font-semibold flex items-center gap-2 text-sm sm:text-base">
+                  <span aria-hidden="true">💬</span> Add a caption
                 </span>
               </div>
-              <input data-role="caption-input" type="text" maxlength="30" placeholder="Meow! 😸" class="input input-bordered input-secondary bg-purple-950/50 text-purple-100 font-medium border-purple-400/40 focus:border-pink-400 focus:outline-none transition-all placeholder:text-purple-400" autocomplete="off" aria-label="Add caption text">
+              <input 
+                data-role="caption-input" 
+                type="text" 
+                maxlength="30" 
+                placeholder="Meow! 😸" 
+                class="input input-bordered input-secondary bg-purple-950/50 text-purple-100 font-medium border-purple-400/40 focus:border-pink-400 transition-all placeholder:text-purple-400 text-sm sm:text-base min-h-[44px]" 
+                autocomplete="off" 
+                aria-label="Add caption text"
+                aria-describedby="caption-help"
+              >
+              <span id="caption-help" class="sr-only">Enter up to 30 characters for your cat GIF caption</span>
             </label>
           </div>
 
-          <div class="flex flex-wrap items-center justify-center gap-4">
-            <button data-role="refresh-button" type="submit" class="btn btn-secondary btn-lg bg-gradient-to-r from-purple-600 to-pink-600 border-0 hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all shadow-lg">
-              <span class="text-xl">🐱</span>
+          <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <button 
+              data-role="refresh-button" 
+              type="submit" 
+              class="btn btn-secondary btn-lg sm:btn-lg bg-gradient-to-r from-purple-600 to-pink-600 border-0 hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 active:scale-95 transition-all shadow-lg min-h-[44px] text-sm sm:text-base"
+              aria-label="Show me a new cat GIF"
+            >
+              <span class="text-lg sm:text-xl" aria-hidden="true">🐱</span>
               Show me a cat
-              <span class="text-xl">✨</span>
+              <span class="text-lg sm:text-xl" aria-hidden="true">✨</span>
             </button>
-            <button data-role="surprise-button" type="button" class="btn btn-outline btn-secondary btn-lg border-2 border-purple-400 hover:bg-purple-600 hover:border-purple-600 transform hover:scale-105 transition-all">
-              <span class="text-xl">🎲</span>
+            <button 
+              data-role="surprise-button" 
+              type="button" 
+              class="btn btn-outline btn-secondary btn-lg sm:btn-lg border-2 border-purple-400 hover:bg-purple-600 hover:border-purple-600 transform hover:scale-105 active:scale-95 transition-all min-h-[44px] text-sm sm:text-base"
+              aria-label="Surprise me with a random cat GIF"
+            >
+              <span class="text-lg sm:text-xl" aria-hidden="true">🎲</span>
               Surprise me!
-              <span class="text-xl">😻</span>
+              <span class="text-lg sm:text-xl" aria-hidden="true">😻</span>
             </button>
-            <button data-role="reset-button" type="button" class="btn btn-ghost btn-lg text-purple-300 hover:text-pink-300 hover:bg-purple-900/50 transform hover:scale-105 transition-all">
-              <span class="text-xl">🔄</span>
+            <button 
+              data-role="reset-button" 
+              type="button" 
+              class="btn btn-ghost btn-lg sm:btn-lg text-purple-300 hover:text-pink-300 hover:bg-purple-900/50 transform hover:scale-105 active:scale-95 transition-all min-h-[44px] text-sm sm:text-base"
+              aria-label="Reset form and show random cat"
+            >
+              <span class="text-lg sm:text-xl" aria-hidden="true">🔄</span>
               Reset
             </button>
           </div>
         </form>
-        <div class="bg-purple-950/30 rounded-xl p-4 border border-purple-500/30">
-          <p data-role="form-helper" class="text-sm text-purple-200 text-center flex items-center justify-center gap-2 flex-wrap">
-            <span class="text-lg">💡</span>
+        <div class="bg-purple-950/30 rounded-xl p-3 sm:p-4 border border-purple-500/30">
+          <p data-role="form-helper" class="text-xs sm:text-sm text-purple-200 text-center flex items-center justify-center gap-2 flex-wrap">
+            <span class="text-base sm:text-lg" aria-hidden="true">💡</span>
             <span><strong>Pro Tip:</strong> Combine a tag and a caption to craft unique, shareable cat moments! Captions are limited to 30 characters.</span>
-            <span class="text-lg">🎨</span>
+            <span class="text-base sm:text-lg" aria-hidden="true">🎨</span>
           </p>
         </div>
       </section>
 
       <!-- Technical Details Section -->
-      <section class="rounded-3xl cat-card p-8 text-purple-100 transform transition-all duration-300 hover:shadow-2xl">
-        <div class="flex items-center gap-3 mb-6">
-          <span class="text-3xl">⚙️</span>
-          <h2 class="text-2xl font-bold text-purple-200">Under the Hood</h2>
-          <span class="text-3xl">🔧</span>
+      <section class="rounded-2xl sm:rounded-3xl cat-card p-6 sm:p-8 text-purple-100 transform transition-all duration-300 hover:shadow-2xl">
+        <div class="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <span class="text-2xl sm:text-3xl" aria-hidden="true">⚙️</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-purple-200">Under the Hood</h2>
+          <span class="text-2xl sm:text-3xl" aria-hidden="true">🔧</span>
         </div>
-        <ul class="space-y-4 text-base">
-          <li class="flex items-start gap-3 bg-purple-950/30 p-4 rounded-xl border border-purple-500/20 hover:border-purple-400/50 transition-all">
-            <span class="text-2xl flex-shrink-0">🏗️</span>
+        <ul class="space-y-3 sm:space-y-4 text-sm sm:text-base" role="list">
+          <li class="flex items-start gap-3 bg-purple-950/30 p-3 sm:p-4 rounded-xl border border-purple-500/20 hover:border-purple-400/50 transition-all">
+            <span class="text-xl sm:text-2xl flex-shrink-0" aria-hidden="true">🏗️</span>
             <span><strong class="text-purple-300">Modular Architecture:</strong> Dependency injection keeps fetch logic and UI responsibilities cleanly separated.</span>
           </li>
-          <li class="flex items-start gap-3 bg-purple-950/30 p-4 rounded-xl border border-purple-500/20 hover:border-purple-400/50 transition-all">
-            <span class="text-2xl flex-shrink-0">🚀</span>
+          <li class="flex items-start gap-3 bg-purple-950/30 p-3 sm:p-4 rounded-xl border border-purple-500/20 hover:border-purple-400/50 transition-all">
+            <span class="text-xl sm:text-2xl flex-shrink-0" aria-hidden="true">🚀</span>
             <span><strong class="text-purple-300">Extensible Service Layer:</strong> Primed for more endpoints (search, favorites, cat facts) without touching UI code.</span>
           </li>
-          <li class="flex items-start gap-3 bg-purple-950/30 p-4 rounded-xl border border-purple-500/20 hover:border-purple-400/50 transition-all">
-            <span class="text-2xl flex-shrink-0">✨</span>
+          <li class="flex items-start gap-3 bg-purple-950/30 p-3 sm:p-4 rounded-xl border border-purple-500/20 hover:border-purple-400/50 transition-all">
+            <span class="text-xl sm:text-2xl flex-shrink-0" aria-hidden="true">✨</span>
             <span><strong class="text-purple-300">Resilient UX:</strong> Optimistic loading states, helpful error feedback, and keyboard-friendly controls.</span>
           </li>
         </ul>
       </section>
 
       <!-- Fun Footer -->
-      <footer class="text-center py-8 space-y-4">
-        <div class="flex justify-center gap-4 text-4xl">
-          <span class="paw-print">🐾</span>
-          <span class="paw-print" style="animation-delay: 0.2s;">🐾</span>
-          <span class="paw-print" style="animation-delay: 0.4s;">🐾</span>
+      <footer class="text-center py-6 sm:py-8 space-y-3 sm:space-y-4">
+        <div class="flex justify-center gap-3 sm:gap-4 text-3xl sm:text-4xl">
+          <span class="paw-print" aria-hidden="true">🐾</span>
+          <span class="paw-print" style="animation-delay: 0.2s;" aria-hidden="true">🐾</span>
+          <span class="paw-print" style="animation-delay: 0.4s;" aria-hidden="true">🐾</span>
         </div>
-        <p class="text-purple-300 text-lg font-medium">
-          Made with 💜 and lots of catnip ☕
+        <p class="text-purple-300 text-base sm:text-lg font-medium">
+          <span aria-hidden="true">💜</span> Made with love and lots of catnip <span aria-hidden="true">☕</span>
         </p>
-        <p class="text-purple-400 text-sm">
-          🐱 Meow responsibly 😸
+        <p class="text-purple-400 text-xs sm:text-sm">
+          <span aria-hidden="true">🐱</span> Meow responsibly <span aria-hidden="true">😸</span>
         </p>
       </footer>
     </main>
