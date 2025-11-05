@@ -21,11 +21,17 @@ export class AppController {
       onRequestCat: (payload) => this.handleRequestCat(payload),
       onReset: () => this.handleReset(),
       onSurprise: () => this.handleSurprise(),
+      onRetry: () => this.handleRetry(),
     });
 
     this.view.setTagLoading(true);
     this.loadTags();
     this.loadCat();
+  }
+
+  handleRetry() {
+    const formValues = this.view.getFormValues();
+    this.loadCat(formValues);
   }
 
   async loadTags() {

@@ -24,6 +24,9 @@ export class AppView {
     this.surpriseButton = this._queryRequired("[data-role=surprise-button]");
     this.resetButton = this._queryRequired("[data-role=reset-button]");
     this.helper = this.appRoot.querySelector("[data-role=form-helper]");
+    this.errorContainer = this.appRoot.querySelector("[data-role=error-container]");
+    this.errorMessage = this.appRoot.querySelector("[data-role=error-message]");
+    this.retryButton = this.appRoot.querySelector("[data-role=retry-button]");
 
     // Persist the default "Any mood" option for later resets.
     this.defaultTagOption = this.tagSelect.querySelector('option[value=""]');
@@ -37,7 +40,7 @@ export class AppView {
     this.setLoading(true);
   }
 
-  bindControls({ onRequestCat, onReset, onSurprise }) {
+  bindControls({ onRequestCat, onReset, onSurprise, onRetry }) {
     if (typeof onRequestCat === "function") {
       this.form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -54,6 +57,45 @@ export class AppView {
     if (typeof onSurprise === "function") {
       this.surpriseButton.addEventListener("click", () => {
         onSurprise();
+      });
+    }
+
+    if (typeof onRetry === "function" && this.retryButton) {
+      this.retryButton.addEventListener("click", () => {
+        this.hideError();
+        onRetry();
+      });
+    }
+
+    // Keyboard navigation improvements
+    this._setupKeyboardNavigation();
+  }
+
+  _setupKeyboardNavigation() {
+    // Allow Enter key on inputs to submit form
+    this.captionInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        this.form.requestSubmit();
+      }
+    });
+
+    // Escape key to reset form when focused on form inputs
+    this.root.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && (event.target === this.tagSelect || event.target === this.captionInput)) {
+        event.preventDefault();
+        this.resetForm();
+        this.tagSelect.blur();
+        this.captionInput.blur();
+      }
+    });
+
+    // Handle skip link focus
+    const skipLink = this.root.querySelector(".skip-link");
+    if (skipLink) {
+      skipLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        this.focusMainContent();
       });
     }
   }
@@ -73,26 +115,43 @@ export class AppView {
   async displayGif(url, { altText } = {}) {
     this.setLoading(true);
     this.clearStatus();
+    this.hideError();
 
     return new Promise((resolve, reject) => {
       const previousSrc = this.lastSuccessfulSrc;
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        this.setLoading(false);
+        this.showError("Loading is taking longer than expected. Please check your connection.");
+        reject(new Error("Image load timeout"));
+      }, 30000); // 30 second timeout
+
       const onLoad = () => {
+        clearTimeout(timeoutId);
         cleanup();
         this.setLoading(false);
         if (altText) {
           this.image.alt = altText;
+        } else {
+          this.image.alt = "A playful cat GIF";
         }
+        this.image.style.opacity = "1";
         this.lastSuccessfulSrc = this.image.src;
+        
+        // Announce to screen readers
+        this.status.setAttribute("aria-live", "polite");
         resolve();
       };
 
       const onError = () => {
+        clearTimeout(timeoutId);
         cleanup();
         this.setLoading(false);
         if (previousSrc) {
           this.image.src = previousSrc;
           this.image.style.opacity = "1";
         }
+        this.showError("Failed to load cat GIF. Please try again.");
         reject(new Error("Failed to load cat GIF"));
       };
 
@@ -143,8 +202,39 @@ export class AppView {
 
   setLoading(isLoading) {
     this.spinner.classList.toggle("hidden", !isLoading);
-    this.image.style.opacity = isLoading ? "0" : "1";
+    if (isLoading) {
+      this.image.style.opacity = "0";
+    }
     this.appRoot.toggleAttribute("aria-busy", isLoading);
+    this.appRoot.setAttribute("aria-busy", isLoading ? "true" : "false");
+    
+    // Update form disabled state
+    this.setFormDisabled(isLoading);
+  }
+
+  showError(message) {
+    if (this.errorContainer && this.errorMessage) {
+      this.errorMessage.textContent = message || "An error occurred. Please try again.";
+      this.errorContainer.classList.remove("hidden");
+      this.errorContainer.setAttribute("aria-hidden", "false");
+      this.errorContainer.setAttribute("role", "alert");
+      
+      // Focus retry button for keyboard users
+      if (this.retryButton) {
+        setTimeout(() => {
+          this.retryButton.focus();
+        }, 100);
+      }
+    }
+    this.showStatus(message, "error");
+  }
+
+  hideError() {
+    if (this.errorContainer) {
+      this.errorContainer.classList.add("hidden");
+      this.errorContainer.setAttribute("aria-hidden", "true");
+      this.errorContainer.removeAttribute("role");
+    }
   }
 
   setFormDisabled(isDisabled) {
@@ -152,9 +242,18 @@ export class AppView {
     controls.forEach((element) => {
       element.disabled = isDisabled;
     });
+    
+    // Also disable action buttons
+    [this.refreshButton, this.surpriseButton, this.resetButton].forEach((button) => {
+      if (button) {
+        button.disabled = isDisabled;
+      }
+    });
   }
 
   showStatus(message, variant = "info") {
+    if (!this.status) return;
+
     this.status.textContent = message;
 
     Object.values(STATUS_VARIANTS).forEach((className) => {
@@ -169,10 +268,13 @@ export class AppView {
     const className = STATUS_VARIANTS[variant] || STATUS_VARIANTS.info;
     this.status.classList.add(className);
     this.status.setAttribute("aria-hidden", "false");
-  }
-
-  showError(message) {
-    this.showStatus(message, "error");
+    
+    // Update live region based on variant
+    if (variant === "error") {
+      this.status.setAttribute("aria-live", "assertive");
+    } else {
+      this.status.setAttribute("aria-live", "polite");
+    }
   }
 
   showSuccess(message) {
@@ -186,10 +288,20 @@ export class AppView {
   resetForm() {
     this.tagSelect.value = "";
     this.captionInput.value = "";
+    this.clearStatus();
+    this.hideError();
   }
 
   focusCaption() {
     this.captionInput.focus();
+  }
+
+  focusMainContent() {
+    // Scroll to main content and focus first interactive element
+    this.appRoot.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => {
+      this.tagSelect.focus();
+    }, 100);
   }
 
   _queryRequired(selector) {
